@@ -1,0 +1,82 @@
+﻿@using TodoManagement.Models
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+
+<main>
+    <section class="dashboard">
+        <div class="sidebarNew">
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <p>Guest User</p>
+            </div>
+            <div class="filters">
+                <h3>Filters</h3>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All Tasks</button>
+                    <button class="filter-btn" data-filter="pending">Pending</button>
+                    <button class="filter-btn" data-filter="inprogress">In Progress</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+                <h3>Priority</h3>
+                <div class="filter-group">
+                    <button class="filter-btn" data-priority="all">All</button>
+                    <button class="filter-btn" data-priority="high">High</button>
+                    <button class="filter-btn" data-priority="medium">Medium</button>
+                    <button class="filter-btn" data-priority="low">Low</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="actions">
+                <button id="add-task-btn" class="primary-btn" @onclick="OpenCreateTask">
+                    <i class="fas fa-plus"></i> Add New Task
+                </button>
+
+                <div class="search-container">
+                    <input type="text" id="search" placeholder="Search tasks...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <div class="tasks-container">
+                <div class="tasks-header">
+                    <h2>My Tasks <span id="task-count">(@TaskNum)</span></h2>
+                    <div class="sort-options">
+                        <label for="sort-by">Sort by:</label>
+                        <select id="sort-by">
+                            <option value="dueDate">Due Date</option>
+                            <option value="priority">Priority</option>
+                            <option value="title">Title</option>
+                            <option value="createdDate">Created Date</option>
+                        </select>
+                    </div>
+                </div>
+                <TasksListComponent/>
+            </div>
+        </div>
+    </section>
+</main>
+@code {
+    private bool isCreateModalVisible = false;
+    private int TaskNum;
+    private void OpenCreateTask()
+    {
+        Navigation.NavigateTo("/Create");
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await HttpClient.GetFromJsonAsync<ApiResponse<int>>("https://localhost:44384/api/TodoManagement/CountAsync");
+        if (response != null && response.Succeeded)
+        {
+            TaskNum = response.Data;
+        }
+    }
+
+    private async Task LoadTasks()
+    {
+        
+    }
+}

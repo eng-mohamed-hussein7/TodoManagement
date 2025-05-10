@@ -1,0 +1,78 @@
+﻿@page "/Update/{Id:guid}"
+@using TodoManagement.Models
+@using TodoManagement.Models.Enum
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+
+<div id="task-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">Update Task</h2>
+            <span @onclick="HomePage" class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <EditForm Model="task" OnValidSubmit="HandleValidSubmit" id="task-form">
+                <InputText @bind-Value="task.Id" hidden />
+                <div class="form-group">
+                    <label>Title</label>
+                    <InputText maxlength="100" required class="input" @bind-Value="task.Title" />
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <InputTextArea id="description" rows="3" @bind-Value="task.Description"></InputTextArea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <InputSelect class="input" id="status" @bind-Value="task.Status">
+                            @foreach (var status in Enum.GetValues<StatusEnum>())
+                            {
+                                <option value="@((int)status)">@status</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <InputSelect class="input" id="priority" @bind-Value="task.Priority">
+                            @foreach (var priority in Enum.GetValues<PriorityEnum>())
+                            {
+                                <option value="@((int)priority)">@priority</option>
+                            }
+                        </InputSelect>
+
+                    </div>
+                </div>                
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <InputDate class="input" @bind-Value="task.DueDate" />
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="secondary-btn" @onclick="HomePage">Cancel</button>
+                    <button type="submit" id="save-btn" class="primary-btn">Save Change</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+
+</div>
+@code {
+
+    [Parameter]
+    public Guid Id { get; set; }
+    private UpdateTaskModel task = new();
+    protected override async Task OnInitializedAsync()
+    {
+        var apiResponse = await HttpClient.GetFromJsonAsync<ApiResponse<UpdateTaskModel>>($"https://localhost:44384/api/TodoManagement/GetById?Id={Id}");
+        task = apiResponse.Data;
+    }
+    private void HomePage() => Navigation.NavigateTo("/");
+
+    private async Task HandleValidSubmit()
+    {
+        var response = await HttpClient.PutAsJsonAsync("https://localhost:44384/api/TodoManagement/Edit", task);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+}

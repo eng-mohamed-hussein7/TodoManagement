@@ -1,0 +1,73 @@
+﻿@page "/Create"
+@using TodoManagement.Models
+@using TodoManagement.Models.Enum
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+
+<!-- Add Task Modal -->
+<div id="task-modal" class="">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">Add New Task</h2>
+            <span class="close" @onclick="HomePage">&times;</span>
+        </div>
+        <div class="modal-body">
+
+            <EditForm Model="task" OnValidSubmit="HandleValidSubmit">
+                <div class="form-group">
+                    <label for="title">Title <span class="required">*</span></label>
+                    <InputText type="text" id="title" maxlength="100" required @bind-Value="task.Title" />
+                    <small>Maximum 100 characters</small>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <InputTextArea id="description" rows="3" @bind-Value="task.Description"></InputTextArea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <InputSelect class="input" id="status" @bind-Value="task.Status">
+                            @foreach (var status in Enum.GetValues<StatusEnum>())
+                            {
+                                <option value="@((int)status)">@status</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <InputSelect class="input" id="priority" @bind-Value="task.Priority">
+                            @foreach (var priority in Enum.GetValues<PriorityEnum>())
+                            {
+                                <option value="@((int)priority)">@priority</option>
+                            }
+                        </InputSelect>
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dueDate">Due Date</label>
+                    <InputDate class="input" @bind-Value="task.DueDate" id="dueDate" />
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="secondary-btn" @onclick="HomePage">Cancel</button>
+                    <button type="submit" id="save-btn" class="primary-btn">Save Task</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateTaskModel task = new();
+
+    private async Task HandleValidSubmit()
+    {
+        var response = await HttpClient.PostAsJsonAsync("https://localhost:44384/api/TodoManagement/Create", task);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+    private void HomePage() => Navigation.NavigateTo("/");
+}
